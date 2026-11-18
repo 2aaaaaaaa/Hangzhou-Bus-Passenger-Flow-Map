@@ -1,0 +1,83 @@
+/* 主题动态变量桥接与昼夜热力场丝滑切换过渡：
+ * 默认锁定「湖镜冷白（lake）」蓝色瓷感视觉，开启全局热力图时平滑过渡至「暗夜热力场（thermal）」深色底图。 */
+.app,
+.stage-veil,
+.date-picker,
+.search input,
+.tool-btn,
+.views-group,
+.legend,
+.dock,
+.sheet,
+.layers-pop,
+.cal-pop,
+.clock-time,
+.masthead h1,
+.trail,
+.lbl {
+  transition-property: background-color, color, border-color, box-shadow, opacity, right, max-width, transform;
+  transition-duration: .52s;
+  transition-timing-function: var(--ease);
+}
+.lbl {
+  transition-property: background-color, color, border-color, opacity;
+  transition-duration: .36s;
+}
+html[data-motion="reduced"] .app,
+html[data-motion="reduced"] .stage-veil,
+html[data-motion="reduced"] .tool-btn,
+html[data-motion="reduced"] .views-group,
+html[data-motion="reduced"] .legend,
+html[data-motion="reduced"] .dock,
+html[data-motion="reduced"] .sheet {
+  transition-duration: 0s !important;
+}
+
+.legend-ramp i {
+  transition: background-color .52s var(--ease);
+}
+.legend-thermal {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  border-top-color: transparent !important;
+  transition: max-height .45s var(--ease), opacity .38s var(--ease), margin-top .45s var(--ease), padding-top .45s var(--ease), border-color .45s var(--ease);
+}
+.legend-thermal.on {
+  max-height: 52px;
+  opacity: 1;
+  margin-top: 9px !important;
+  padding-top: 8px !important;
+  border-top-color: var(--rule-soft) !important;
+}
+
+/* 切换瞬间微光虹膜晕染层 */
+.stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0;
+  background: radial-gradient(circle at 50% 54%, rgba(56, 200, 242, 0.22) 0%, rgba(255, 184, 77, 0.08) 38%, transparent 72%);
+}
+.app.thermal-switching .stage::after {
+  animation: thermalPulse .72s cubic-bezier(.22, 1, .36, 1) forwards;
+}
+@keyframes thermalPulse {
+  0% { opacity: 0; transform: scale(0.86); }
+  32% { opacity: 1; }
+  100% { opacity: 0; transform: scale(1.16); }
+}
+
+html[data-palette="thermal"] .cal-day { background: rgba(16, 33, 52, 0.90); }
+html[data-palette="thermal"] .lbl-selected { color: #07111d; background: #eaf4fc; border-left-color: var(--gold); }
+html[data-palette="thermal"] .lbl-selected::after { border-top-color: #eaf4fc; }
+html[data-palette="thermal"] .tide-head span { color: #08121e; font-weight: 700; }
+html[data-palette="thermal"] .stage-veil {
+  background:
+    radial-gradient(62% 56% at 12% 17%, rgba(var(--veil-rgb), 0.84) 0%, rgba(var(--veil-rgb), 0.36) 50%, rgba(var(--veil-rgb), 0) 100%),
+    linear-gradient(0deg, rgba(var(--veil-rgb), 0.82) 0%, rgba(var(--veil-rgb), 0.22) 12%, rgba(var(--veil-rgb), 0) 24%);
+}

@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="zh-Hans" data-palette="lake">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>杭州公交客流潮位图 · 城市潮汐三维视觉志</title>
+<meta name="description" content="杭州公交 46 天站点客流记录的三维城市可视化（大数据可视化课程设计 Carbon 典藏版）。" />
+<link rel="stylesheet" href="./css/app.css" />
+<link rel="stylesheet" href="./css/palettes.css" />
+<script src="./js/palettes.js"></script>
+</head>
+<body>
+<div id="app" class="app" data-state="booting" data-sheet="">
+
+  <!-- 主舞台：三维城市 -->
+  <div class="stage" id="stage">
+    <div class="stage-canvas" id="stage-canvas" aria-label="杭州三维城市，可拖动旋转、右键平移、滚轮缩放"></div>
+    <div class="stage-veil" aria-hidden="true"></div>
+    <div class="stage-labels" id="stage-labels" aria-hidden="true"></div>
+  </div>
+
+  <!-- 左上：刊头、时刻与焦点路径 -->
+  <header class="masthead" id="masthead">
+    <div class="masthead-kicker">
+      <span class="seal-stamp" aria-hidden="true">杭城潮汐</span>
+      <span class="kicker-text">HANGZHOU TRANSIT TIDE ATLAS · 46 DAYS</span>
+    </div>
+    <h1 class="masthead-title">杭州公交客流潮位图</h1>
+    <p class="masthead-date">
+      <span id="mh-date">—</span>
+      <span class="mh-sep" aria-hidden="true">·</span>
+      <span class="mh-weekday" id="mh-weekday"></span>
+    </p>
+    <div class="clock" aria-live="polite">
+      <span class="clock-time" id="clock-time">07:00</span>
+      <div class="clock-meta">
+        <span class="clock-state" id="clock-state" data-kind="record">记录</span>
+        <span class="clock-period" id="clock-period">晨间潮位</span>
+      </div>
+    </div>
+    <p class="clock-reading" id="clock-reading">全市本时段记录 —</p>
+    <nav class="trail" id="trail" aria-label="当前查看位置"></nav>
+  </header>
+
+  <!-- 顶部右：日期、搜索、主题、面板入口 -->
+  <div class="toolbar" id="toolbar">
+    <div class="date-picker" id="date-picker">
+      <button class="icon-btn" id="date-prev" aria-label="前一天" title="前一天（[ 键）">
+        <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <button class="date-current" id="date-current" aria-haspopup="dialog" aria-expanded="false" aria-controls="calendar">
+        <svg class="cal-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg>
+        <span id="date-current-label">2026-09-22</span>
+        <svg class="chev-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <button class="icon-btn" id="date-next" aria-label="后一天" title="后一天（] 键）">
+        <svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+      </button>
+      <div class="calendar" id="calendar" role="dialog" aria-label="选择日期" hidden></div>
+    </div>
+
+    <div class="search" id="search">
+      <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+      <input id="search-input" type="search" placeholder="搜索站点，如 灵隐 / 东站" autocomplete="off" aria-label="搜索站点" aria-controls="search-results" aria-expanded="false" role="combobox" />
+      <kbd class="search-kbd" aria-hidden="true">/</kbd>
+      <div class="search-results" id="search-results" role="listbox" hidden></div>
+    </div>
+
+    <button class="tool-btn tool-btn-thermal" id="btn-thermal" aria-pressed="false" title="开启全局热力图（深色三维底图 + 高亮核密度热力场，快捷键 H）">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8c.6 3.2-1.4 5.2-1.4 7.7 0 1.8 1.2 3.1 2.9 3.1 2 0 3.3-1.7 3.2-4.1 2.5 1.8 4.1 4.7 4.1 7.7 0 4.9-3.9 8.8-8.8 8.8S3.2 22.1 3.2 17.2c0-3.9 2.4-7.4 6.1-9.3-.2 1.5.4 2.8 1.5 3.4-.4-2.8.2-5.7 1.2-8.5z"/></svg><span>全局热力图</span>
+    </button>
+
+    <button class="tool-btn" id="btn-insight" aria-expanded="false" aria-controls="sheet" data-sheet="insight">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V11M9.5 20V5M15 20v-8M20.5 20v-4M2.5 20h19"/></svg><span>分析</span>
+    </button>
+    <button class="tool-btn" id="btn-layers" aria-expanded="false" aria-controls="layers-pop">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5l9 4.8-9 4.8-9-4.8 9-4.8zM3 13l9 4.8 9-4.8M3 17.5l9 4.5 9-4.5"/></svg><span>图层</span>
+    </button>
+    <button class="tool-btn" id="btn-about" aria-expanded="false" aria-controls="sheet" data-sheet="about">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg><span>数据说明</span>
+    </button>
+  </div>
+
+  <!-- 图层与场景 -->
+  <div class="layers-pop" id="layers-pop" role="dialog" aria-label="图层与场景" hidden>
+    <section>
+      <h2>空间图层与热力场</h2>
+      <div class="switches" id="layer-switches"></div>
+      <div class="tile-row">
+        <p class="tile-status" id="tile-status" role="status">内置高精矢量路网已就绪</p>
+        <button class="text-btn" id="btn-tile-retry" hidden>重试在线瓦片</button>
+      </div>
+    </section>
+    <section>
+      <h2>客流数值口径</h2>
+      <div class="segmented" id="scenario-seg" role="radiogroup" aria-label="客流数值口径"></div>
+      <p class="fine" id="scenario-note">显示原始记录值。</p>
+    </section>
+    <section>
+      <h2>演示偏好</h2>
+      <div class="switches" id="pref-switches"></div>
+    </section>
+  </div>
+
+  <!-- 左下：机位、二维切换、黄金广告交汇口与骨干线路速览 -->
+  <nav class="views" id="views" aria-label="视角、广告选址与线路">
+    <div class="views-group">
+      <span class="views-label">镜头</span>
+      <div class="views-row" id="view-presets"></div>
+      <button class="chip chip-accent" id="btn-dim" aria-pressed="false" title="在 2D 平面俯视与 3D 立体城市之间切换">2D 平面</button>
+      <button class="chip" id="btn-reset-view" title="回到城市全景（Esc）">回到全景</button>
+    </div>
+    <div class="views-group ad-bar" id="ad-bar">
+      <span class="views-label views-label-gold">广告口</span>
+      <div class="views-row ad-row" id="ad-presets"></div>
+    </div>
+    <div class="views-group routes-bar" id="routes-bar">
+      <span class="views-label">线路</span>
+      <div class="views-row routes-row" id="route-presets"></div>
+    </div>
+  </nav>
+
+  <!-- 右下：潮位标尺图例 -->
+  <aside class="legend" id="legend" aria-label="图例">
+    <div class="legend-head">
+      <p class="legend-title" id="legend-title">站点本时段客流</p>
+      <small id="legend-unit">人次 / 小时</small>
+    </div>
+    <ol class="legend-ramp" id="legend-ramp"></ol>
+    <div class="legend-thermal" id="legend-thermal" hidden>
+      <div class="thermal-bar" aria-hidden="true"></div>
+      <div class="thermal-scale"><span>低密度辐射</span><span>中度汇流</span><span>高热曝光核</span></div>
+    </div>
+    <p class="legend-note" id="legend-note">柱体缺席表示该站本时段无记录，不按 0 处理。</p>
+  </aside>
+
+  <!-- 右侧抽屉：站点 / 分析 / 说明 -->
+  <aside class="sheet" id="sheet" aria-hidden="true" inert>
+    <div class="sheet-head">
+      <button class="icon-btn" id="sheet-back" aria-label="返回上一层" hidden>
+        <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <div class="sheet-title-wrap">
+        <span class="sheet-kicker" id="sheet-kicker">TRANSIT ANALYTICS</span>
+        <h2 class="sheet-title" id="sheet-title">客流分析</h2>
+      </div>
+      <button class="icon-btn" id="sheet-close" aria-label="收起面板（Esc）" title="收起面板（Esc）">
+        <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="sheet-body" id="sheet-body">
+      <section class="pane" id="pane-station" data-pane="station" hidden></section>
+      <section class="pane" id="pane-insight" data-pane="insight" hidden></section>
+      <section class="pane" id="pane-about" data-pane="about" hidden></section>
+    </div>
+  </aside>
+
+  <!-- 底部：24 小时潮位时间带 -->
+  <footer class="dock" id="dock">
+    <div class="dock-controls">
+      <button class="play" id="btn-play" aria-label="播放" title="播放 / 暂停（空格）">
+        <svg class="i-play" viewBox="0 0 24 24"><path d="M7.5 4.8v14.4L19.8 12z"/></svg>
+        <svg class="i-pause" viewBox="0 0 24 24"><path d="M7 4.5h3.5v15H7zM13.5 4.5H17v15h-3.5z"/></svg>
+      </button>
+      <div class="dock-segs">
+        <div class="segmented compact" id="speed-seg" role="radiogroup" aria-label="播放速度"></div>
+        <div class="segmented compact" id="mode-seg" role="radiogroup" aria-label="时间推进方式"></div>
+      </div>
+    </div>
+    <div class="tide" id="tide" role="slider" tabindex="0" aria-label="时刻" aria-valuemin="0" aria-valuemax="24" aria-valuenow="7">
+      <svg class="tide-svg" id="tide-svg" preserveAspectRatio="none"></svg>
+      <div class="tide-head" id="tide-head"><span id="tide-head-label">07:00</span></div>
+    </div>
+    <div class="dock-foot">
+      <p class="dock-note" id="dock-note">实心潮柱：全市有记录的小时；虚线空槽：当日无记录；流金标尺：当前时刻</p>
+      <p class="dock-hint" aria-hidden="true"><kbd>Space</kbd> 播放 <kbd>H</kbd> 热力 <kbd>[</kbd><kbd>]</kbd> 换日 <kbd>Esc</kbd> 返回</p>
+    </div>
+  </footer>
+
+  <div class="hover-tip" id="hover-tip" role="status" aria-live="polite" hidden></div>
+  <div class="toast" id="toast" role="alert" hidden></div>
+  <div class="gap-banner" id="gap-banner" role="status" hidden></div>
+
+  <div class="fatal" id="fatal" role="alert" hidden>
+    <h2>页面没有准备好</h2>
+    <p id="fatal-msg"></p>
+    <p class="fine">请完整保留 css、js、data、vendor、fonts 文件夹与 index.html 的相对位置，然后刷新页面。</p>
+  </div>
+</div>
+
+<script src="./js/boot.js"></script>
+</body>
+</html>
