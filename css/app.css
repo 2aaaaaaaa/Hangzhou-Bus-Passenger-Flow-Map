@@ -27,7 +27,6 @@
   font-weight: 100 900;
   font-display: swap;
   src: local("方正宋刻本秀楷简繁"), local("FZSongKeBenXiuKaiS-R-JF"), local("FZSKBXKK--GBK1-0"),
-       url("../fonts/FZSKBXKJF.TTF") format("truetype"),
        local("方正宋刻本秀楷简体"), local("FZSongKeBenXiuKaiS-R-GB"), local("FZSKBXKJW--GB1-0");
 }
 
@@ -978,3 +977,4 @@ html[data-motion="reduced"] *, html[data-motion="reduced"] *::before, html[data-
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0s !important; animation: none !important; }
 }
+
