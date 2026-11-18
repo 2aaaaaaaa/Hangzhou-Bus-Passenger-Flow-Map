@@ -2,6 +2,8 @@
 
 《大数据可视化》课程设计，使用 Three.js 和 Apache ECharts 展示杭州公交站点客流。项目把 2026 年 8 月 14 日至 9 月 28 日的 46 天历史记录放进同一张可交互的城市地图，方便按日期、时段、行政区和站点查看客流分布。
 
+**[在线体验](https://2aaaaaaaa.github.io/Hangzhou-Bus-Passenger-Flow-Map/?offline)**
+
 ![三维地图与分区分析](preview.png)
 
 ## 本地运行
@@ -38,4 +40,5 @@
 | [data/](data/) / [vendor/](vendor/) / [fonts/](fonts/) | 本地数据、第三方库和字体 |
 
 公开分发前，请确认数据和字体允许再分发。随包字体的来源及许可说明见 [fonts/README.md](fonts/README.md)。
+
 
